@@ -18,19 +18,6 @@
 
 package org.apache.hudi.table;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.HoodieClientTestHarness;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.BloomFilter;
@@ -54,6 +41,9 @@ import org.apache.hudi.config.HoodieStorageConfig;
 import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.io.HoodieCreateHandle;
 import org.apache.hudi.table.HoodieCopyOnWriteTable.UpsertPartitioner;
+
+import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.parquet.avro.AvroReadSupport;
@@ -63,7 +53,20 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import scala.Tuple2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestCopyOnWriteTable extends HoodieClientTestHarness {
 
@@ -250,7 +253,6 @@ public class TestCopyOnWriteTable extends HoodieClientTestHarness {
     assertEquals(4, writeStatus.getStat().getNumWrites());// 3 rewritten records + 1 new record
   }
 
-
   private List<HoodieRecord> newHoodieRecords(int n, String time) throws Exception {
     List<HoodieRecord> records = new ArrayList<>();
     for (int i = 0; i < n; i++) {
@@ -387,7 +389,6 @@ public class TestCopyOnWriteTable extends HoodieClientTestHarness {
     assertEquals("If the number of records are more than 1150, then there should be a new file", 3, counts);
   }
 
-
   private UpsertPartitioner getUpsertPartitioner(int smallFileSize, int numInserts, int numUpdates, int fileSize,
       String testPartitionPath, boolean autoSplitInserts) throws Exception {
     HoodieWriteConfig config = makeHoodieClientConfigBuilder()
@@ -419,7 +420,6 @@ public class TestCopyOnWriteTable extends HoodieClientTestHarness {
     return partitioner;
   }
 
-
   @Test
   public void testUpsertPartitioner() throws Exception {
     final String testPartitionPath = "2016/09/26";
@@ -428,7 +428,6 @@ public class TestCopyOnWriteTable extends HoodieClientTestHarness {
     List<HoodieCopyOnWriteTable.InsertBucket> insertBuckets = partitioner.getInsertBuckets(testPartitionPath);
     assertEquals("Total of 2 insert buckets", 2, insertBuckets.size());
   }
-
 
   @Test
   public void testUpsertPartitionerWithSmallInsertHandling() throws Exception {

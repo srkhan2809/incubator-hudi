@@ -18,14 +18,6 @@
 
 package org.apache.hudi;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.avro.Schema.Field;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.hudi.client.embedded.EmbeddedTimelineService;
 import org.apache.hudi.common.model.HoodieKey;
 import org.apache.hudi.common.model.HoodieRecord;
@@ -43,13 +35,34 @@ import org.apache.hudi.hive.HiveSyncConfig;
 import org.apache.hudi.hive.PartitionValueExtractor;
 import org.apache.hudi.hive.SlashEncodedDayPartitionValueExtractor;
 import org.apache.hudi.index.HoodieIndex;
+
+import org.apache.avro.Schema.Field;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
- * Utilities used throughout the data source
+ * Utilities used throughout the data source.
  */
 public class DataSourceUtils {
+
+  /**
+   * Obtain value of the provided nullable field as string, denoted by dot notation. e.g: a.b.c
+   */
+  public static String getNullableNestedFieldValAsString(GenericRecord record, String fieldName) {
+    try {
+      return getNestedFieldValAsString(record, fieldName);
+    } catch (HoodieException e) {
+      return null;
+    }
+  }
 
   /**
    * Obtain value of the provided field as string, denoted by dot notation. e.g: a.b.c
@@ -92,9 +105,9 @@ public class DataSourceUtils {
   /**
    * Create a key generator class via reflection, passing in any configs needed.
    *
-   * If the class name of key generator is configured through the properties file, i.e., {@code
-   * props}, use the corresponding key generator class; otherwise, use the default key generator class specified in
-   * {@code DataSourceWriteOptions}.
+   * If the class name of key generator is configured through the properties file, i.e., {@code props}, use the
+   * corresponding key generator class; otherwise, use the default key generator class specified in {@code
+   * DataSourceWriteOptions}.
    */
   public static KeyGenerator createKeyGenerator(TypedProperties props) throws IOException {
     String keyGeneratorClass = props.getString(DataSourceWriteOptions.KEYGENERATOR_CLASS_OPT_KEY(),
@@ -107,7 +120,7 @@ public class DataSourceUtils {
   }
 
   /**
-   * Create a partition value extractor class via reflection, passing in any configs needed
+   * Create a partition value extractor class via reflection, passing in any configs needed.
    */
   public static PartitionValueExtractor createPartitionExtractor(String partitionExtractorClass) {
     try {
@@ -124,7 +137,7 @@ public class DataSourceUtils {
       throws IOException {
     try {
       return (HoodieRecordPayload) ReflectionUtils.loadClass(payloadClass,
-          new Class<?>[] {GenericRecord.class, Comparable.class}, record, orderingVal);
+          new Class<?>[]{GenericRecord.class, Comparable.class}, record, orderingVal);
     } catch (Throwable e) {
       throw new IOException("Could not create payload for class: " + payloadClass, e);
     }
@@ -160,7 +173,6 @@ public class DataSourceUtils {
     return new HoodieWriteClient<>(jssc, writeConfig, true);
   }
 
-
   public static JavaRDD<WriteStatus> doWriteOperation(HoodieWriteClient client, JavaRDD<HoodieRecord> hoodieRecords,
       String commitTime, String operation) {
     if (operation.equals(DataSourceWriteOptions.BULK_INSERT_OPERATION_OPT_VAL())) {
@@ -171,6 +183,11 @@ public class DataSourceUtils {
       // default is upsert
       return client.upsert(hoodieRecords, commitTime);
     }
+  }
+
+  public static JavaRDD<WriteStatus> doDeleteOperation(HoodieWriteClient client, JavaRDD<HoodieKey> hoodieKeys,
+      String commitTime) {
+    return client.delete(hoodieKeys, commitTime);
   }
 
   public static HoodieRecord createHoodieRecord(GenericRecord gr, Comparable orderingVal, HoodieKey hKey,

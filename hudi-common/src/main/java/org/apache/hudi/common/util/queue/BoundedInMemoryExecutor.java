@@ -16,8 +16,15 @@
  * limitations under the License.
  */
 
-
 package org.apache.hudi.common.util.queue;
+
+import org.apache.hudi.common.util.DefaultSizeEstimator;
+import org.apache.hudi.common.util.Option;
+import org.apache.hudi.common.util.SizeEstimator;
+import org.apache.hudi.exception.HoodieException;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,12 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.hudi.common.util.DefaultSizeEstimator;
-import org.apache.hudi.common.util.Option;
-import org.apache.hudi.common.util.SizeEstimator;
-import org.apache.hudi.exception.HoodieException;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 /**
  * Executor which orchestrates concurrent producers and consumers communicating through a bounded in-memory queue. This
@@ -77,7 +78,7 @@ public class BoundedInMemoryExecutor<I, O, E> {
   }
 
   /**
-   * Start all Producers
+   * Start all Producers.
    */
   public ExecutorCompletionService<Boolean> startProducers() {
     // Latch to control when and which producer thread will close the queue
@@ -109,7 +110,7 @@ public class BoundedInMemoryExecutor<I, O, E> {
   }
 
   /**
-   * Start only consumer
+   * Start only consumer.
    */
   private Future<E> startConsumer() {
     return consumer.map(consumer -> {
@@ -130,7 +131,7 @@ public class BoundedInMemoryExecutor<I, O, E> {
   }
 
   /**
-   * Main API to run both production and consumption
+   * Main API to run both production and consumption.
    */
   public E execute() {
     try {
@@ -142,7 +143,6 @@ public class BoundedInMemoryExecutor<I, O, E> {
       throw new HoodieException(e);
     }
   }
-
 
   public boolean isRemaining() {
     return queue.iterator().hasNext();

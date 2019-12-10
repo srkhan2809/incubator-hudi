@@ -18,16 +18,12 @@
 
 package org.apache.hudi.hive.util;
 
+import org.apache.hudi.common.model.HoodieTestUtils;
+import org.apache.hudi.common.util.FileIOUtils;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,8 +35,6 @@ import org.apache.hadoop.hive.metastore.TUGIBasedProcessor;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hive.service.server.HiveServer2;
-import org.apache.hudi.common.model.HoodieTestUtils;
-import org.apache.hudi.common.util.FileIOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TProcessor;
@@ -55,6 +49,14 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class HiveTestService {
 
   private static Logger LOG = LogManager.getLogger(HiveTestService.class);
@@ -62,7 +64,7 @@ public class HiveTestService {
   private static final int CONNECTION_TIMEOUT = 30000;
 
   /**
-   * Configuration settings
+   * Configuration settings.
    */
   private Configuration hadoopConf;
   private String workDir;
@@ -218,8 +220,6 @@ public class HiveTestService {
 
   // XXX: From org.apache.hadoop.hive.metastore.HiveMetaStore,
   // with changes to support binding to a specified IP address (not only 0.0.0.0)
-
-
   private static final class ChainedTTransportFactory extends TTransportFactory {
 
     private final TTransportFactory parentTransFactory;
@@ -235,7 +235,6 @@ public class HiveTestService {
       return childTransFactory.getTransport(parentTransFactory.getTransport(trans));
     }
   }
-
 
   private static final class TServerSocketKeepAlive extends TServerSocket {
 

@@ -18,15 +18,6 @@
 
 package org.apache.hudi.func;
 
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.HoodieClientTestHarness;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.SerializableConfiguration;
@@ -43,11 +34,22 @@ import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.io.HoodieCreateHandle;
 import org.apache.hudi.io.HoodieMergeHandle;
 import org.apache.hudi.table.HoodieCopyOnWriteTable;
+
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.fail;
 
 public class TestUpdateMapFunction extends HoodieClientTestHarness {
 
@@ -100,7 +102,7 @@ public class TestUpdateMapFunction extends HoodieClientTestHarness {
     // Now try an update with an evolved schema
     // Evolved schema does not have guarantee on preserving the original field ordering
     final HoodieWriteConfig config2 = makeHoodieClientConfig("/exampleEvolvedSchema.txt");
-    final Schema schema = Schema.parse(config2.getSchema());
+    final Schema schema = new Schema.Parser().parse(config2.getSchema());
     final WriteStatus insertResult = statuses.get(0);
     String fileId = insertResult.getFileId();
 

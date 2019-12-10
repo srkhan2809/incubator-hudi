@@ -18,23 +18,6 @@
 
 package org.apache.hudi.table;
 
-import com.google.common.hash.Hashing;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.IndexedRecord;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.avro.model.HoodieActionInstant;
 import org.apache.hudi.avro.model.HoodieCleanerPlan;
@@ -69,6 +52,12 @@ import org.apache.hudi.func.SparkBoundedInMemoryExecutor;
 import org.apache.hudi.io.HoodieCleanHelper;
 import org.apache.hudi.io.HoodieCreateHandle;
 import org.apache.hudi.io.HoodieMergeHandle;
+
+import com.google.common.hash.Hashing;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.IndexedRecord;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.parquet.avro.AvroParquetReader;
@@ -78,11 +67,24 @@ import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import scala.Tuple2;
 
-
 /**
- * Implementation of a very heavily read-optimized Hoodie Table where
+ * Implementation of a very heavily read-optimized Hoodie Table where.
  * <p>
  * INSERTS - Produce new files, block aligned to desired size (or) Merge with the smallest existing file, to expand it
  * <p>
@@ -271,7 +273,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
   }
 
   /**
-   * Generates List of files to be cleaned
+   * Generates List of files to be cleaned.
    * 
    * @param jsc JavaSparkContext
    * @return Cleaner Plan
@@ -387,7 +389,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
   }
 
   /**
-   * Delete Inflight instant if enabled
+   * Delete Inflight instant if enabled.
    *
    * @param deleteInstant Enable Deletion of Inflight instant
    * @param activeTimeline Hoodie active timeline
@@ -412,7 +414,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
   }
 
   /**
-   * Consumer that dequeues records from queue and sends to Merge Handle
+   * Consumer that dequeues records from queue and sends to Merge Handle.
    */
   private static class UpdateHandler extends BoundedInMemoryQueueConsumer<GenericRecord, Void> {
 
@@ -472,7 +474,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
   }
 
   /**
-   * Helper class for a small file's location and its actual size on disk
+   * Helper class for a small file's location and its actual size on disk.
    */
   static class SmallFile implements Serializable {
 
@@ -491,7 +493,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
 
   /**
    * Helper class for an insert bucket along with the weight [0.0, 0.1] that defines the amount of incoming inserts that
-   * should be allocated to the bucket
+   * should be allocated to the bucket.
    */
   class InsertBucket implements Serializable {
 
@@ -510,7 +512,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
   }
 
   /**
-   * Helper class for a bucket's type (INSERT and UPDATE) and its file location
+   * Helper class for a bucket's type (INSERT and UPDATE) and its file location.
    */
   class BucketInfo implements Serializable {
 
@@ -528,16 +530,16 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
   }
 
   /**
-   * Packs incoming records to be upserted, into buckets (1 bucket = 1 RDD partition)
+   * Packs incoming records to be upserted, into buckets (1 bucket = 1 RDD partition).
    */
   class UpsertPartitioner extends Partitioner {
 
     /**
-     * List of all small files to be corrected
+     * List of all small files to be corrected.
      */
     List<SmallFile> smallFiles = new ArrayList<SmallFile>();
     /**
-     * Total number of RDD partitions, is determined by total buckets we want to pack the incoming workload into
+     * Total number of RDD partitions, is determined by total buckets we want to pack the incoming workload into.
      */
     private int totalBuckets = 0;
     /**
@@ -558,7 +560,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
     private HashMap<Integer, BucketInfo> bucketInfoMap;
 
     /**
-     * Rolling stats for files
+     * Rolling stats for files.
      */
     protected HoodieRollingStatMetadata rollingStatMetadata;
     protected long averageRecordSize;
@@ -670,7 +672,7 @@ public class HoodieCopyOnWriteTable<T extends HoodieRecordPayload> extends Hoodi
     }
 
     /**
-     * Returns a list of small files in the given partition path
+     * Returns a list of small files in the given partition path.
      */
     protected List<SmallFile> getSmallFiles(String partitionPath) {
 

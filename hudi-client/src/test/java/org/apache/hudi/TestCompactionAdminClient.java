@@ -18,15 +18,6 @@
 
 package org.apache.hudi;
 
-import static org.apache.hudi.common.model.HoodieTableType.MERGE_ON_READ;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hudi.CompactionAdminClient.ValidationOpResult;
 import org.apache.hudi.common.model.CompactionOperation;
 import org.apache.hudi.common.model.HoodieLogFile;
@@ -39,10 +30,21 @@ import org.apache.hudi.common.util.Option;
 import org.apache.hudi.common.util.collection.Pair;
 import org.apache.hudi.exception.HoodieException;
 import org.apache.hudi.exception.HoodieIOException;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.hudi.common.model.HoodieTableType.MERGE_ON_READ;
 
 public class TestCompactionAdminClient extends TestHoodieClientBase {
 
@@ -161,7 +163,7 @@ public class TestCompactionAdminClient extends TestHoodieClientBase {
   }
 
   /**
-   * Enssure compaction plan is valid
+   * Enssure compaction plan is valid.
    *
    * @param compactionInstant Compaction Instant
    */
@@ -204,7 +206,7 @@ public class TestCompactionAdminClient extends TestHoodieClientBase {
   }
 
   /**
-   * Validate Unschedule operations
+   * Validate Unschedule operations.
    */
   private List<Pair<HoodieLogFile, HoodieLogFile>> validateUnSchedulePlan(CompactionAdminClient client,
       String ingestionInstant, String compactionInstant, int numEntriesPerInstant, int expNumRenames) throws Exception {
@@ -213,7 +215,7 @@ public class TestCompactionAdminClient extends TestHoodieClientBase {
   }
 
   /**
-   * Validate Unschedule operations
+   * Validate Unschedule operations.
    */
   private List<Pair<HoodieLogFile, HoodieLogFile>> validateUnSchedulePlan(CompactionAdminClient client,
       String ingestionInstant, String compactionInstant, int numEntriesPerInstant, int expNumRenames,
@@ -285,7 +287,7 @@ public class TestCompactionAdminClient extends TestHoodieClientBase {
   }
 
   /**
-   * Validate Unschedule operations
+   * Validate Unschedule operations.
    */
   private void validateUnScheduleFileId(CompactionAdminClient client, String ingestionInstant, String compactionInstant,
       CompactionOperation op, int expNumRenames) throws Exception {

@@ -18,15 +18,6 @@
 
 package org.apache.hudi.io;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.IndexedRecord;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.model.HoodieDataFile;
 import org.apache.hudi.common.model.HoodiePartitionMetadata;
@@ -47,9 +38,20 @@ import org.apache.hudi.exception.HoodieUpsertException;
 import org.apache.hudi.io.storage.HoodieStorageWriter;
 import org.apache.hudi.io.storage.HoodieStorageWriterFactory;
 import org.apache.hudi.table.HoodieTable;
+
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.IndexedRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.TaskContext;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings("Duplicates")
 public class HoodieMergeHandle<T extends HoodieRecordPayload> extends HoodieWriteHandle<T> {
@@ -75,7 +77,7 @@ public class HoodieMergeHandle<T extends HoodieRecordPayload> extends HoodieWrit
   }
 
   /**
-   * Called by compactor code path
+   * Called by compactor code path.
    */
   public HoodieMergeHandle(HoodieWriteConfig config, String commitTime, HoodieTable<T> hoodieTable,
       Map<String, HoodieRecord<T>> keyToNewRecords, String fileId, HoodieDataFile dataFileToBeMerged) {
@@ -85,7 +87,6 @@ public class HoodieMergeHandle<T extends HoodieRecordPayload> extends HoodieWrit
     init(fileId, keyToNewRecords.get(keyToNewRecords.keySet().stream().findFirst().get()).getPartitionPath(),
         dataFileToBeMerged);
   }
-
 
   public static Schema createHoodieWriteSchema(Schema originalSchema) {
     return HoodieAvroUtils.addMetadataFields(originalSchema);
@@ -107,7 +108,7 @@ public class HoodieMergeHandle<T extends HoodieRecordPayload> extends HoodieWrit
   }
 
   /**
-   * Determines whether we can accept the incoming records, into the current file, depending on
+   * Determines whether we can accept the incoming records, into the current file. Depending on
    * <p>
    * - Whether it belongs to the same partitionPath as existing records - Whether the current file written bytes lt max
    * file size
@@ -138,14 +139,14 @@ public class HoodieMergeHandle<T extends HoodieRecordPayload> extends HoodieWrit
   }
 
   /**
-   * Rewrite the GenericRecord with the Schema containing the Hoodie Metadata fields
+   * Rewrite the GenericRecord with the Schema containing the Hoodie Metadata fields.
    */
   protected GenericRecord rewriteRecord(GenericRecord record) {
     return HoodieAvroUtils.rewriteRecord(record, writerSchema);
   }
 
   /**
-   * Extract old file path, initialize StorageWriter and WriteStatus
+   * Extract old file path, initialize StorageWriter and WriteStatus.
    */
   private void init(String fileId, String partitionPath, HoodieDataFile dataFileToBeMerged) {
     logger.info("partitionPath:" + partitionPath + ", fileId to be merged:" + fileId);
@@ -188,7 +189,7 @@ public class HoodieMergeHandle<T extends HoodieRecordPayload> extends HoodieWrit
   }
 
   /**
-   * Load the new incoming records in a map and return partitionPath
+   * Load the new incoming records in a map and return partitionPath.
    */
   private String init(String fileId, Iterator<HoodieRecord<T>> newRecordsItr) {
     try {

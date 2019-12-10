@@ -18,18 +18,22 @@
 
 package org.apache.hudi.common.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hudi.common.table.HoodieTimeline;
 import org.apache.hudi.common.table.timeline.HoodieInstant;
 import org.apache.hudi.common.table.timeline.HoodieInstant.State;
 import org.apache.hudi.common.util.collection.Pair;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * A helper class used to diff timeline.
+ */
 public class TimelineDiffHelper {
 
   protected static Logger log = LogManager.getLogger(TimelineDiffHelper.class);
@@ -96,6 +100,9 @@ public class TimelineDiffHelper {
     }).collect(Collectors.toList());
   }
 
+  /**
+   * A diff result of timeline.
+   */
   public static class TimelineDiffResult {
 
     private final List<HoodieInstant> newlySeenInstants;

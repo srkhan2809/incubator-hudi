@@ -18,30 +18,6 @@
 
 package org.apache.hudi.utilities.deltastreamer;
 
-import com.beust.jcommander.IStringConverter;
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
-import com.google.common.base.Preconditions;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hudi.HoodieWriteClient;
 import org.apache.hudi.OverwriteWithLatestAvroPayload;
 import org.apache.hudi.common.model.HoodieTableType;
@@ -60,11 +36,36 @@ import org.apache.hudi.utilities.HiveIncrementalPuller;
 import org.apache.hudi.utilities.UtilHelpers;
 import org.apache.hudi.utilities.schema.SchemaProvider;
 import org.apache.hudi.utilities.sources.JsonDFSSource;
+
+import com.beust.jcommander.IStringConverter;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * An Utility which can incrementally take the output from {@link HiveIncrementalPuller} and apply it to the target
@@ -106,7 +107,7 @@ public class HoodieDeltaStreamer implements Serializable {
   }
 
   /**
-   * Main method to start syncing
+   * Main method to start syncing.
    * 
    * @throws Exception
    */
@@ -267,10 +268,8 @@ public class HoodieDeltaStreamer implements Serializable {
     @Parameter(names = {"--checkpoint"}, description = "Resume Delta Streamer from this checkpoint.")
     public String checkpoint = null;
 
-
     @Parameter(names = {"--help", "-h"}, help = true)
     public Boolean help = false;
-
 
     public boolean isAsyncCompactionEnabled() {
       return continuousMode && !forceDisableCompaction
@@ -307,7 +306,7 @@ public class HoodieDeltaStreamer implements Serializable {
   public static class DeltaSyncService extends AbstractDeltaStreamerService {
 
     /**
-     * Delta Sync Config
+     * Delta Sync Config.
      */
     private final HoodieDeltaStreamer.Config cfg;
 
@@ -317,12 +316,12 @@ public class HoodieDeltaStreamer implements Serializable {
     private transient SchemaProvider schemaProvider;
 
     /**
-     * Spark Session
+     * Spark Session.
      */
     private transient SparkSession sparkSession;
 
     /**
-     * Spark context
+     * Spark context.
      */
     private transient JavaSparkContext jssc;
 
@@ -332,17 +331,17 @@ public class HoodieDeltaStreamer implements Serializable {
     TypedProperties props;
 
     /**
-     * Async Compactor Service
+     * Async Compactor Service.
      */
     private AsyncCompactService asyncCompactService;
 
     /**
-     * Table Type
+     * Table Type.
      */
     private final HoodieTableType tableType;
 
     /**
-     * Delta Sync
+     * Delta Sync.
      */
     private transient DeltaSync deltaSync;
 
@@ -420,7 +419,7 @@ public class HoodieDeltaStreamer implements Serializable {
     }
 
     /**
-     * Shutdown compactor as DeltaSync is shutdown
+     * Shutdown compactor as DeltaSync is shutdown.
      */
     private void shutdownCompactor(boolean error) {
       log.info("Delta Sync shutdown. Error ?" + error);
@@ -431,7 +430,7 @@ public class HoodieDeltaStreamer implements Serializable {
     }
 
     /**
-     * Callback to initialize write client and start compaction service if required
+     * Callback to initialize write client and start compaction service if required.
      * 
      * @param writeClient HoodieWriteClient
      * @return
@@ -459,7 +458,7 @@ public class HoodieDeltaStreamer implements Serializable {
     }
 
     /**
-     * Close all resources
+     * Close all resources.
      */
     public void close() {
       if (null != deltaSync) {
@@ -508,14 +507,14 @@ public class HoodieDeltaStreamer implements Serializable {
     }
 
     /**
-     * Enqueues new Pending compaction
+     * Enqueues new Pending compaction.
      */
     public void enqueuePendingCompaction(HoodieInstant instant) {
       pendingCompactions.add(instant);
     }
 
     /**
-     * Wait till outstanding pending compactions reduces to the passed in value
+     * Wait till outstanding pending compactions reduces to the passed in value.
      * 
      * @param numPendingCompactions Maximum pending compactions allowed
      * @throws InterruptedException
@@ -532,7 +531,7 @@ public class HoodieDeltaStreamer implements Serializable {
     }
 
     /**
-     * Fetch Next pending compaction if available
+     * Fetch Next pending compaction if available.
      * 
      * @return
      * @throws InterruptedException
@@ -553,7 +552,7 @@ public class HoodieDeltaStreamer implements Serializable {
     }
 
     /**
-     * Start Compaction Service
+     * Start Compaction Service.
      */
     protected Pair<CompletableFuture, ExecutorService> startService() {
       ExecutorService executor = Executors.newFixedThreadPool(maxConcurrentCompaction);

@@ -18,16 +18,6 @@
 
 package org.apache.hudi.io;
 
-import com.google.common.collect.Maps;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.IndexedRecord;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.model.FileSlice;
 import org.apache.hudi.common.model.HoodieDeltaWriteStat;
@@ -52,10 +42,22 @@ import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.exception.HoodieAppendException;
 import org.apache.hudi.exception.HoodieUpsertException;
 import org.apache.hudi.table.HoodieTable;
+
+import com.google.common.collect.Maps;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.IndexedRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.TaskContext;
 import org.apache.spark.util.SizeEstimator;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * IO Operation to append data onto an existing file.
@@ -299,7 +301,7 @@ public class HoodieAppendHandle<T extends HoodieRecordPayload> extends HoodieWri
   }
 
   /**
-   * Checks if the number of records have reached the set threshold and then flushes the records to disk
+   * Checks if the number of records have reached the set threshold and then flushes the records to disk.
    */
   private void flushToDiskIfRequired(HoodieRecord record) {
     // Append if max number of records reached to achieve block size

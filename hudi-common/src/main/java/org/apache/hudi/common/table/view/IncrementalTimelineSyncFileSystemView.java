@@ -18,12 +18,6 @@
 
 package org.apache.hudi.common.table.view;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.avro.model.HoodieCleanMetadata;
 import org.apache.hudi.avro.model.HoodieCompactionPlan;
 import org.apache.hudi.avro.model.HoodieRestoreMetadata;
@@ -38,13 +32,22 @@ import org.apache.hudi.common.table.HoodieTimeline;
 import org.apache.hudi.common.table.timeline.HoodieInstant;
 import org.apache.hudi.common.util.AvroUtils;
 import org.apache.hudi.common.util.CompactionUtils;
+import org.apache.hudi.common.util.FSUtils;
 import org.apache.hudi.common.util.Option;
 import org.apache.hudi.common.util.TimelineDiffHelper;
 import org.apache.hudi.common.util.TimelineDiffHelper.TimelineDiffResult;
 import org.apache.hudi.common.util.collection.Pair;
 import org.apache.hudi.exception.HoodieException;
+
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Adds the capability to incrementally sync the changes to file-system view as and when new instants gets completed.
@@ -134,7 +137,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Remove Pending compaction instant
+   * Remove Pending compaction instant.
    *
    * @param timeline New Hoodie Timeline
    * @param instant Compaction Instant to be removed
@@ -148,7 +151,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Add newly found compaction instant
+   * Add newly found compaction instant.
    *
    * @param timeline Hoodie Timeline
    * @param instant Compaction Instant
@@ -179,7 +182,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Add newly found commit/delta-commit instant
+   * Add newly found commit/delta-commit instant.
    *
    * @param timeline Hoodie Timeline
    * @param instant Instant
@@ -208,7 +211,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Add newly found restore instant
+   * Add newly found restore instant.
    *
    * @param timeline Hoodie Timeline
    * @param instant Restore Instant
@@ -232,7 +235,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Add newly found rollback instant
+   * Add newly found rollback instant.
    *
    * @param timeline Hoodie Timeline
    * @param instant Rollback Instant
@@ -249,7 +252,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Add newly found clean instant
+   * Add newly found clean instant.
    *
    * @param timeline Timeline
    * @param instant Clean instant
@@ -259,7 +262,13 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
     HoodieCleanMetadata cleanMetadata =
         AvroUtils.deserializeHoodieCleanMetadata(timeline.getInstantDetails(instant).get());
     cleanMetadata.getPartitionMetadata().entrySet().stream().forEach(entry -> {
-      removeFileSlicesForPartition(timeline, instant, entry.getKey(), entry.getValue().getSuccessDeleteFiles());
+      final String basePath = metaClient.getBasePath();
+      final String partitionPath = entry.getValue().getPartitionPath();
+      List<String> fullPathList = entry.getValue().getSuccessDeleteFiles()
+          .stream().map(fileName -> new Path(FSUtils
+              .getPartitionPath(basePath, partitionPath), fileName).toString())
+          .collect(Collectors.toList());
+      removeFileSlicesForPartition(timeline, instant, entry.getKey(), fullPathList);
     });
     log.info("Done Syncing cleaner instant (" + instant + ")");
   }
@@ -282,7 +291,7 @@ public abstract class IncrementalTimelineSyncFileSystemView extends AbstractTabl
   }
 
   /**
-   * Apply mode whether to add or remove the delta view
+   * Apply mode whether to add or remove the delta view.
    */
   enum DeltaApplyMode {
     ADD, REMOVE

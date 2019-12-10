@@ -18,20 +18,22 @@
 
 package org.apache.hudi.client.embedded;
 
-import java.io.IOException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hudi.common.SerializableConfiguration;
 import org.apache.hudi.common.table.view.FileSystemViewManager;
 import org.apache.hudi.common.table.view.FileSystemViewStorageConfig;
 import org.apache.hudi.common.table.view.FileSystemViewStorageType;
 import org.apache.hudi.common.util.NetworkUtils;
 import org.apache.hudi.timeline.service.TimelineService;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 
+import java.io.IOException;
+
 /**
- * Timeline Service that runs as part of write client
+ * Timeline Service that runs as part of write client.
  */
 public class EmbeddedTimelineService {
 
@@ -84,7 +86,7 @@ public class EmbeddedTimelineService {
   }
 
   /**
-   * Retrieves proper view storage configs for remote clients to access this service
+   * Retrieves proper view storage configs for remote clients to access this service.
    */
   public FileSystemViewStorageConfig getRemoteFileSystemViewConfig() {
     return FileSystemViewStorageConfig.newBuilder().withStorageType(FileSystemViewStorageType.REMOTE_FIRST)

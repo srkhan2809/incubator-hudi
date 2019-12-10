@@ -18,28 +18,6 @@
 
 package org.apache.hudi.common;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.avro.model.HoodieCompactionPlan;
 import org.apache.hudi.common.model.HoodieAvroPayload;
 import org.apache.hudi.common.model.HoodieCommitMetadata;
@@ -55,6 +33,30 @@ import org.apache.hudi.common.util.FSUtils;
 import org.apache.hudi.common.util.HoodieAvroUtils;
 import org.apache.hudi.common.util.Option;
 import org.apache.hudi.exception.HoodieIOException;
+
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Class to be used in tests to keep generating test inserts and updates against a corpus.
@@ -78,6 +80,7 @@ public class HoodieTestDataGenerator {
       + "{\"name\": \"begin_lat\", \"type\": \"double\"}," + "{\"name\": \"begin_lon\", \"type\": \"double\"},"
       + "{\"name\": \"end_lat\", \"type\": \"double\"}," + "{\"name\": \"end_lon\", \"type\": \"double\"},"
       + "{\"name\":\"fare\",\"type\": \"double\"}]}";
+  public static String NULL_SCHEMA = Schema.create(Schema.Type.NULL).toString();
   public static String TRIP_HIVE_COLUMN_TYPES = "double,string,string,string,double,double,double,double,double";
   public static Schema avroSchema = new Schema.Parser().parse(TRIP_EXAMPLE_SCHEMA);
   public static Schema avroSchemaWithMetadataFields = HoodieAvroUtils.addMetadataFields(avroSchema);
@@ -302,7 +305,8 @@ public class HoodieTestDataGenerator {
   }
 
   /**
-   * Generates new updates, randomly distributed across the keys above. There can be duplicates within the returned list
+   * Generates new updates, randomly distributed across the keys above. There can be duplicates within the returned
+   * list
    *
    * @param commitTime Commit Timestamp
    * @param n Number of updates (including dups)
@@ -327,6 +331,17 @@ public class HoodieTestDataGenerator {
    */
   public List<HoodieRecord> generateUniqueUpdates(String commitTime, Integer n) {
     return generateUniqueUpdatesStream(commitTime, n).collect(Collectors.toList());
+  }
+
+  /**
+   * Generates deduped delete of keys previously inserted, randomly distributed across the keys above.
+   *
+   * @param commitTime Commit Timestamp
+   * @param n Number of unique records
+   * @return list of hoodie record updates
+   */
+  public List<HoodieKey> generateUniqueDeletes(String commitTime, Integer n) {
+    return generateUniqueDeleteStream(commitTime, n).collect(Collectors.toList());
   }
 
   /**
@@ -360,6 +375,33 @@ public class HoodieTestDataGenerator {
     });
   }
 
+  /**
+   * Generates deduped delete of keys previously inserted, randomly distributed across the keys above.
+   *
+   * @param commitTime Commit Timestamp
+   * @param n Number of unique records
+   * @return stream of hoodie record updates
+   */
+  public Stream<HoodieKey> generateUniqueDeleteStream(String commitTime, Integer n) {
+    final Set<KeyPartition> used = new HashSet<>();
+
+    if (n > numExistingKeys) {
+      throw new IllegalArgumentException("Requested unique deletes is greater than number of available keys");
+    }
+
+    return IntStream.range(0, n).boxed().map(i -> {
+      int index = numExistingKeys == 1 ? 0 : rand.nextInt(numExistingKeys - 1);
+      KeyPartition kp = existingKeys.get(index);
+      // Find the available keyPartition starting from randomly chosen one.
+      while (used.contains(kp)) {
+        index = (index + 1) % numExistingKeys;
+        kp = existingKeys.get(index);
+      }
+      used.add(kp);
+      return kp.key;
+    });
+  }
+
   public String[] getPartitionPaths() {
     return partitionPaths;
   }
@@ -369,6 +411,7 @@ public class HoodieTestDataGenerator {
   }
 
   public static class KeyPartition implements Serializable {
+
     HoodieKey key;
     String partitionPath;
   }

@@ -18,9 +18,44 @@
 
 package org.apache.hudi.hive;
 
+import org.apache.hudi.common.model.HoodieCommitMetadata;
+import org.apache.hudi.common.model.HoodieFileFormat;
+import org.apache.hudi.common.model.HoodieLogFile;
+import org.apache.hudi.common.model.HoodieTableType;
+import org.apache.hudi.common.storage.StorageSchemes;
+import org.apache.hudi.common.table.HoodieTableMetaClient;
+import org.apache.hudi.common.table.HoodieTimeline;
+import org.apache.hudi.common.table.timeline.HoodieInstant;
+import org.apache.hudi.common.util.FSUtils;
+import org.apache.hudi.common.util.Option;
+import org.apache.hudi.common.util.collection.Pair;
+import org.apache.hudi.exception.HoodieIOException;
+import org.apache.hudi.exception.InvalidDatasetException;
+import org.apache.hudi.hive.util.SchemaUtil;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.jdbc.HiveDriver;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.schema.MessageType;
+import org.apache.thrift.TException;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -35,38 +70,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hive.jdbc.HiveDriver;
-import org.apache.hudi.common.model.HoodieCommitMetadata;
-import org.apache.hudi.common.model.HoodieFileFormat;
-import org.apache.hudi.common.model.HoodieLogFile;
-import org.apache.hudi.common.model.HoodieTableType;
-import org.apache.hudi.common.table.HoodieTableMetaClient;
-import org.apache.hudi.common.table.HoodieTimeline;
-import org.apache.hudi.common.table.timeline.HoodieInstant;
-import org.apache.hudi.common.util.FSUtils;
-import org.apache.hudi.common.util.Option;
-import org.apache.hudi.common.util.collection.Pair;
-import org.apache.hudi.exception.HoodieIOException;
-import org.apache.hudi.exception.InvalidDatasetException;
-import org.apache.hudi.hive.util.SchemaUtil;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.parquet.format.converter.ParquetMetadataConverter;
-import org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.parquet.hadoop.metadata.ParquetMetadata;
-import org.apache.parquet.schema.MessageType;
-import org.apache.thrift.TException;
 
 @SuppressWarnings("ConstantConditions")
 public class HoodieHiveClient {
@@ -129,7 +132,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Add the (NEW) partitons to the table
+   * Add the (NEW) partitons to the table.
    */
   void addPartitionsToTable(List<String> partitionsToAdd) {
     if (partitionsToAdd.isEmpty()) {
@@ -142,7 +145,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Partition path has changed - update the path for te following partitions
+   * Partition path has changed - update the path for te following partitions.
    */
   void updatePartitionsToTable(List<String> changedPartitions) {
     if (changedPartitions.isEmpty()) {
@@ -169,8 +172,8 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Generate Hive Partition from partition values
-   * 
+   * Generate Hive Partition from partition values.
+   *
    * @param partition Partition path
    * @return
    */
@@ -194,7 +197,9 @@ public class HoodieHiveClient {
     String alterTable = "ALTER TABLE " + syncConfig.tableName;
     for (String partition : partitions) {
       String partitionClause = getPartitionClause(partition);
-      String fullPartitionPath = FSUtils.getPartitionPath(syncConfig.basePath, partition).toString();
+      Path partitionPath = FSUtils.getPartitionPath(syncConfig.basePath, partition);
+      String fullPartitionPath = partitionPath.toUri().getScheme().equals(StorageSchemes.HDFS.getScheme())
+              ? FSUtils.getDFSFullPartitionPath(fs, partitionPath) : partitionPath.toString();
       String changePartition =
           alterTable + " PARTITION (" + partitionClause + ") SET LOCATION '" + fullPartitionPath + "'";
       changePartitions.add(changePartition);
@@ -218,7 +223,8 @@ public class HoodieHiveClient {
 
     List<PartitionEvent> events = Lists.newArrayList();
     for (String storagePartition : partitionStoragePartitions) {
-      String fullStoragePartitionPath = FSUtils.getPartitionPath(syncConfig.basePath, storagePartition).toString();
+      Path storagePartitionPath = FSUtils.getPartitionPath(syncConfig.basePath, storagePartition);
+      String fullStoragePartitionPath = Path.getPathWithoutSchemeAndAuthority(storagePartitionPath).toUri().getPath();
       // Check if the partition values or if hdfs path is the same
       List<String> storagePartitionValues = partitionValueExtractor.extractPartitionValuesInPath(storagePartition);
       Collections.sort(storagePartitionValues);
@@ -234,9 +240,8 @@ public class HoodieHiveClient {
     return events;
   }
 
-
   /**
-   * Scan table partitions
+   * Scan table partitions.
    */
   public List<Partition> scanTablePartitions() throws TException {
     return client.listPartitions(syncConfig.databaseName, syncConfig.tableName, (short) -1);
@@ -269,7 +274,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Get the table schema
+   * Get the table schema.
    */
   public Map<String, String> getTableSchema() {
     if (syncConfig.useJdbc) {
@@ -423,7 +428,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Read the schema from the log file on path
+   * Read the schema from the log file on path.
    */
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private MessageType readSchemaFromLogFile(Option<HoodieInstant> lastCompactionCommitOpt, Path path)
@@ -438,7 +443,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Read the parquet schema from a parquet File
+   * Read the parquet schema from a parquet File.
    */
   private MessageType readSchemaFromDataFile(Path parquetFilePath) throws IOException {
     LOG.info("Reading schema from " + parquetFilePath);
@@ -463,7 +468,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Execute a update in hive metastore with this SQL
+   * Execute a update in hive metastore with this SQL.
    *
    * @param s SQL to execute
    */
@@ -485,7 +490,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Execute a update in hive using Hive Driver
+   * Execute a update in hive using Hive Driver.
    *
    * @param sql SQL statement to execute
    */
@@ -530,8 +535,6 @@ public class HoodieHiveClient {
     }
     return responses;
   }
-
-
 
   private void createHiveConnection() {
     if (connection == null) {
@@ -660,7 +663,7 @@ public class HoodieHiveClient {
   }
 
   /**
-   * Partition Event captures any partition that needs to be added or updated
+   * Partition Event captures any partition that needs to be added or updated.
    */
   static class PartitionEvent {
 

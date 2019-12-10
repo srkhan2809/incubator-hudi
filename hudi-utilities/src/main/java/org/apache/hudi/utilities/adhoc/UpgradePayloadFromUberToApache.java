@@ -18,8 +18,19 @@
 
 package org.apache.hudi.utilities.adhoc;
 
+import org.apache.hudi.common.model.HoodieTableType;
+import org.apache.hudi.common.table.HoodieTableConfig;
+import org.apache.hudi.common.table.HoodieTableMetaClient;
+import org.apache.hudi.common.util.FSUtils;
+import org.apache.hudi.config.HoodieCompactionConfig;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,19 +38,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hudi.common.model.HoodieTableType;
-import org.apache.hudi.common.table.HoodieTableConfig;
-import org.apache.hudi.common.table.HoodieTableMetaClient;
-import org.apache.hudi.common.util.FSUtils;
-import org.apache.hudi.config.HoodieCompactionConfig;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 /**
  * This is an one-time use class meant for migrating the configuration for "hoodie.compaction.payload.class" in
- * .hoodie/hoodie.properties from com.uber.hoodie to org.apache.hudi It takes in a file containing base-paths for a set
+ * .hoodie/hoodie.properties from com.uber.hoodie to org.apache.hudi . It takes in a file containing base-paths for a set
  * of hudi datasets and does the migration
  */
 public class UpgradePayloadFromUberToApache implements Serializable {
@@ -80,7 +82,7 @@ public class UpgradePayloadFromUberToApache implements Serializable {
               newPropsMap.put(HoodieCompactionConfig.PAYLOAD_CLASS_PROP, newPayloadClass);
               Properties props = new Properties();
               props.putAll(newPropsMap);
-              tableConfig.createHoodieProperties(metaClient.getFs(), new Path(metaPath), props);
+              HoodieTableConfig.createHoodieProperties(metaClient.getFs(), new Path(metaPath), props);
               logger.info("Finished upgrade for " + basePath);
             }
           }

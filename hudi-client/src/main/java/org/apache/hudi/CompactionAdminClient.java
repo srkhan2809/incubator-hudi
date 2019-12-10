@@ -18,19 +18,6 @@
 
 package org.apache.hudi;
 
-import static org.apache.hudi.common.table.HoodieTimeline.COMPACTION_ACTION;
-
-import com.google.common.base.Preconditions;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.avro.model.HoodieCompactionOperation;
 import org.apache.hudi.avro.model.HoodieCompactionPlan;
 import org.apache.hudi.client.embedded.EmbeddedTimelineService;
@@ -54,12 +41,27 @@ import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.exception.HoodieException;
 import org.apache.hudi.exception.HoodieIOException;
 import org.apache.hudi.func.OperationResult;
+
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.hudi.common.table.HoodieTimeline.COMPACTION_ACTION;
+
 /**
- * Client to perform admin operations related to compaction
+ * Client to perform admin operations related to compaction.
  */
 public class CompactionAdminClient extends AbstractHoodieClient {
 
@@ -212,7 +214,7 @@ public class CompactionAdminClient extends AbstractHoodieClient {
   }
 
   /**
-   * Construction Compaction Plan from compaction instant
+   * Construction Compaction Plan from compaction instant.
    */
   private static HoodieCompactionPlan getCompactionPlan(HoodieTableMetaClient metaClient, String compactionInstant)
       throws IOException {
@@ -271,7 +273,7 @@ public class CompactionAdminClient extends AbstractHoodieClient {
   }
 
   /**
-   * Check if a compaction operation is valid
+   * Check if a compaction operation is valid.
    *
    * @param metaClient Hoodie Table Meta client
    * @param compactionInstant Compaction Instant
@@ -340,7 +342,7 @@ public class CompactionAdminClient extends AbstractHoodieClient {
   }
 
   /**
-   * Execute Renaming operation
+   * Execute Renaming operation.
    *
    * @param metaClient HoodieTable MetaClient
    * @param renameActions List of rename operations
@@ -482,7 +484,7 @@ public class CompactionAdminClient extends AbstractHoodieClient {
   }
 
   /**
-   * Holds Operation result for Renaming
+   * Holds Operation result for Renaming.
    */
   public static class RenameOpResult extends OperationResult<RenameInfo> {
 
@@ -503,7 +505,7 @@ public class CompactionAdminClient extends AbstractHoodieClient {
   }
 
   /**
-   * Holds Operation result for Renaming
+   * Holds Operation result for Renaming.
    */
   public static class ValidationOpResult extends OperationResult<CompactionOperation> {
 

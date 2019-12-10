@@ -18,15 +18,16 @@
 
 package org.apache.hudi.common.util;
 
-import org.apache.avro.Schema;
 import org.apache.hudi.common.model.HoodieRecord;
 import org.apache.hudi.common.model.HoodieRecordPayload;
 import org.apache.hudi.common.util.collection.ExternalSpillableMap;
+
+import org.apache.avro.Schema;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
- * Size Estimator for Hoodie record payload
+ * Size Estimator for Hoodie record payload.
  * 
  * @param <T>
  */

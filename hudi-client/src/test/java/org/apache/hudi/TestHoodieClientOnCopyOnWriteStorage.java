@@ -18,26 +18,6 @@
 
 package org.apache.hudi;
 
-import static org.apache.hudi.common.util.ParquetUtils.readRowKeysFromParquet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.common.HoodieClientTestUtils;
 import org.apache.hudi.common.HoodieTestDataGenerator;
 import org.apache.hudi.common.model.HoodieCommitMetadata;
@@ -64,15 +44,40 @@ import org.apache.hudi.exception.HoodieCommitException;
 import org.apache.hudi.exception.HoodieIOException;
 import org.apache.hudi.index.HoodieIndex;
 import org.apache.hudi.table.HoodieTable;
+
+import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaRDD;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.apache.hudi.common.HoodieTestDataGenerator.NULL_SCHEMA;
+import static org.apache.hudi.common.HoodieTestDataGenerator.TRIP_EXAMPLE_SCHEMA;
+import static org.apache.hudi.common.util.ParquetUtils.readRowKeysFromParquet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
 public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
 
   /**
-   * Test Auto Commit behavior for HoodieWriteClient insert API
+   * Test Auto Commit behavior for HoodieWriteClient insert API.
    */
   @Test
   public void testAutoCommitOnInsert() throws Exception {
@@ -80,7 +85,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Auto Commit behavior for HoodieWriteClient insertPrepped API
+   * Test Auto Commit behavior for HoodieWriteClient insertPrepped API.
    */
   @Test
   public void testAutoCommitOnInsertPrepped() throws Exception {
@@ -88,7 +93,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Auto Commit behavior for HoodieWriteClient upsert API
+   * Test Auto Commit behavior for HoodieWriteClient upsert API.
    */
   @Test
   public void testAutoCommitOnUpsert() throws Exception {
@@ -96,7 +101,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Auto Commit behavior for HoodieWriteClient upsert Prepped API
+   * Test Auto Commit behavior for HoodieWriteClient upsert Prepped API.
    */
   @Test
   public void testAutoCommitOnUpsertPrepped() throws Exception {
@@ -104,7 +109,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Auto Commit behavior for HoodieWriteClient bulk-insert API
+   * Test Auto Commit behavior for HoodieWriteClient bulk-insert API.
    */
   @Test
   public void testAutoCommitOnBulkInsert() throws Exception {
@@ -112,7 +117,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Auto Commit behavior for HoodieWriteClient bulk-insert prepped API
+   * Test Auto Commit behavior for HoodieWriteClient bulk-insert prepped API.
    */
   @Test
   public void testAutoCommitOnBulkInsertPrepped() throws Exception {
@@ -121,7 +126,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test auto-commit by applying write function
+   * Test auto-commit by applying write function.
    *
    * @param writeFn One of HoodieWriteClient Write API
    * @throws Exception in case of failure
@@ -147,7 +152,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test De-duplication behavior for HoodieWriteClient insert API
+   * Test De-duplication behavior for HoodieWriteClient insert API.
    */
   @Test
   public void testDeduplicationOnInsert() throws Exception {
@@ -155,7 +160,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test De-duplication behavior for HoodieWriteClient bulk-insert API
+   * Test De-duplication behavior for HoodieWriteClient bulk-insert API.
    */
   @Test
   public void testDeduplicationOnBulkInsert() throws Exception {
@@ -163,7 +168,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test De-duplication behavior for HoodieWriteClient upsert API
+   * Test De-duplication behavior for HoodieWriteClient upsert API.
    */
   @Test
   public void testDeduplicationOnUpsert() throws Exception {
@@ -171,7 +176,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Deduplication Logic for write function
+   * Test Deduplication Logic for write function.
    *
    * @param writeFn One of HoddieWriteClient non-prepped write APIs
    * @throws Exception in case of failure
@@ -219,7 +224,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Build a test Hoodie WriteClient with dummy index to configure isGlobal flag
+   * Build a test Hoodie WriteClient with dummy index to configure isGlobal flag.
    *
    * @param isGlobal Flag to control HoodieIndex.isGlobal
    * @return Hoodie Write Client
@@ -232,7 +237,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test Upsert API
+   * Test Upsert API.
    */
   @Test
   public void testUpserts() throws Exception {
@@ -240,7 +245,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test UpsertPrepped API
+   * Test UpsertPrepped API.
    */
   @Test
   public void testUpsertsPrepped() throws Exception {
@@ -248,7 +253,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test one of HoodieWriteClient upsert(Prepped) APIs
+   * Test one of HoodieWriteClient upsert(Prepped) APIs.
    *
    * @param hoodieWriteConfig Write Config
    * @param writeFn One of Hoodie Write Function API
@@ -274,10 +279,19 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
     updateBatch(hoodieWriteConfig, client, newCommitTime, prevCommitTime,
         Option.of(Arrays.asList(commitTimeBetweenPrevAndNew)), initCommitTime, numRecords, writeFn, isPrepped, true,
         numRecords, 200, 2);
+
+    // Delete 1
+    prevCommitTime = newCommitTime;
+    newCommitTime = "005";
+    numRecords = 50;
+
+    deleteBatch(hoodieWriteConfig, client, newCommitTime, prevCommitTime,
+        initCommitTime, numRecords, HoodieWriteClient::delete, isPrepped, true,
+        0, 150);
   }
 
   /**
-   * Tesst deletion of records
+   * Tesst deletion of records.
    */
   @Test
   public void testDeletes() throws Exception {
@@ -304,7 +318,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
         -1, recordGenFunction, HoodieWriteClient::upsert, true, 200, 200, 1);
 
     /**
-     * Write 2 (deletes+writes)
+     * Write 2 (deletes+writes).
      */
     String prevCommitTime = newCommitTime;
     newCommitTime = "004";
@@ -322,7 +336,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test scenario of new file-group getting added during upsert()
+   * Test scenario of new file-group getting added during upsert().
    */
   @Test
   public void testSmallInsertHandlingForUpserts() throws Exception {
@@ -330,7 +344,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
     final int insertSplitLimit = 100;
     // setup the small file handling params
     HoodieWriteConfig config = getSmallInsertWriteConfig(insertSplitLimit); // hold upto 200 records max
-    dataGen = new HoodieTestDataGenerator(new String[] {testPartitionPath});
+    dataGen = new HoodieTestDataGenerator(new String[]{testPartitionPath});
 
     HoodieWriteClient client = getHoodieWriteClient(config, false);
 
@@ -434,7 +448,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test scenario of new file-group getting added during insert()
+   * Test scenario of new file-group getting added during insert().
    */
   @Test
   public void testSmallInsertHandlingForInserts() throws Exception {
@@ -443,7 +457,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
     final int insertSplitLimit = 100;
     // setup the small file handling params
     HoodieWriteConfig config = getSmallInsertWriteConfig(insertSplitLimit); // hold upto 200 records max
-    dataGen = new HoodieTestDataGenerator(new String[] {testPartitionPath});
+    dataGen = new HoodieTestDataGenerator(new String[]{testPartitionPath});
     HoodieWriteClient client = getHoodieWriteClient(config, false);
 
     // Inserts => will write file1
@@ -455,7 +469,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
     List<WriteStatus> statuses = client.insert(insertRecordsRDD1, commitTime1).collect();
 
     assertNoWriteErrors(statuses);
-    assertPartitionMetadata(new String[] {testPartitionPath}, fs);
+    assertPartitionMetadata(new String[]{testPartitionPath}, fs);
 
     assertEquals("Just 1 file needs to be added.", 1, statuses.size());
     String file1 = statuses.get(0).getFileId();
@@ -516,7 +530,165 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test to ensure commit metadata points to valid files
+   * Test delete with delete api.
+   */
+  @Test
+  public void testDeletesWithDeleteApi() throws Exception {
+    final String testPartitionPath = "2016/09/26";
+    final int insertSplitLimit = 100;
+    List<String> keysSoFar = new ArrayList<>();
+    // setup the small file handling params
+    HoodieWriteConfig config = getSmallInsertWriteConfig(insertSplitLimit); // hold upto 200 records max
+    dataGen = new HoodieTestDataGenerator(new String[]{testPartitionPath});
+
+    HoodieWriteClient client = getHoodieWriteClient(config, false);
+
+    // Inserts => will write file1
+    String commitTime1 = "001";
+    client.startCommitWithTime(commitTime1);
+    List<HoodieRecord> inserts1 = dataGen.generateInserts(commitTime1, insertSplitLimit); // this writes ~500kb
+    Set<String> keys1 = HoodieClientTestUtils.getRecordKeys(inserts1);
+    keysSoFar.addAll(keys1);
+    JavaRDD<HoodieRecord> insertRecordsRDD1 = jsc.parallelize(inserts1, 1);
+    List<WriteStatus> statuses = client.upsert(insertRecordsRDD1, commitTime1).collect();
+
+    assertNoWriteErrors(statuses);
+
+    assertEquals("Just 1 file needs to be added.", 1, statuses.size());
+    String file1 = statuses.get(0).getFileId();
+    Assert.assertEquals("file should contain 100 records",
+        readRowKeysFromParquet(jsc.hadoopConfiguration(), new Path(basePath, statuses.get(0).getStat().getPath()))
+            .size(),
+        100);
+
+    // Delete 20 among 100 inserted
+    testDeletes(client, inserts1, 20, file1, "002", 80, keysSoFar);
+
+    // Insert and update 40 records
+    Pair<Set<String>, List<HoodieRecord>> updateBatch2 = testUpdates("003", client, 40, 120);
+    keysSoFar.addAll(updateBatch2.getLeft());
+
+    // Delete 10 records among 40 updated
+    testDeletes(client, updateBatch2.getRight(), 10, file1, "004", 110, keysSoFar);
+
+    // do another batch of updates
+    Pair<Set<String>, List<HoodieRecord>> updateBatch3 = testUpdates("005", client, 40, 150);
+    keysSoFar.addAll(updateBatch3.getLeft());
+
+    // delete non existent keys
+    String commitTime6 = "006";
+    client.startCommitWithTime(commitTime6);
+
+    List<HoodieRecord> dummyInserts3 = dataGen.generateInserts(commitTime6, 20);
+    List<HoodieKey> hoodieKeysToDelete3 = HoodieClientTestUtils
+        .getKeysToDelete(HoodieClientTestUtils.getHoodieKeys(dummyInserts3), 20);
+    JavaRDD<HoodieKey> deleteKeys3 = jsc.parallelize(hoodieKeysToDelete3, 1);
+    statuses = client.delete(deleteKeys3, commitTime6).collect();
+    assertNoWriteErrors(statuses);
+    assertEquals("Just 0 write status for delete.", 0, statuses.size());
+
+    // Check the entire dataset has all records still
+    String[] fullPartitionPaths = new String[dataGen.getPartitionPaths().length];
+    for (int i = 0; i < fullPartitionPaths.length; i++) {
+      fullPartitionPaths[i] = String.format("%s/%s/*", basePath, dataGen.getPartitionPaths()[i]);
+    }
+    assertEquals("Must contain " + 150 + " records", 150,
+        HoodieClientTestUtils.read(jsc, basePath, sqlContext, fs, fullPartitionPaths).count());
+
+    // delete another batch. previous delete commit should have persisted the schema. If not,
+    // this will throw exception
+    testDeletes(client, updateBatch3.getRight(), 10, file1, "007", 140, keysSoFar);
+  }
+
+  private Pair<Set<String>, List<HoodieRecord>> testUpdates(String commitTime, HoodieWriteClient client,
+      int sizeToInsertAndUpdate, int expectedTotalRecords)
+      throws IOException {
+    client.startCommitWithTime(commitTime);
+    List<HoodieRecord> inserts = dataGen.generateInserts(commitTime, sizeToInsertAndUpdate);
+    Set<String> keys = HoodieClientTestUtils.getRecordKeys(inserts);
+    List<HoodieRecord> insertsAndUpdates = new ArrayList<>();
+    insertsAndUpdates.addAll(inserts);
+    insertsAndUpdates.addAll(dataGen.generateUpdates(commitTime, inserts));
+
+    JavaRDD<HoodieRecord> insertAndUpdatesRDD = jsc.parallelize(insertsAndUpdates, 1);
+    List<WriteStatus> statuses = client.upsert(insertAndUpdatesRDD, commitTime).collect();
+    assertNoWriteErrors(statuses);
+
+    // Check the entire dataset has all records still
+    String[] fullPartitionPaths = new String[dataGen.getPartitionPaths().length];
+    for (int i = 0; i < fullPartitionPaths.length; i++) {
+      fullPartitionPaths[i] = String.format("%s/%s/*", basePath, dataGen.getPartitionPaths()[i]);
+    }
+    assertEquals("Must contain " + expectedTotalRecords + " records", expectedTotalRecords,
+        HoodieClientTestUtils.read(jsc, basePath, sqlContext, fs, fullPartitionPaths).count());
+    return Pair.of(keys, inserts);
+  }
+
+  private void testDeletes(HoodieWriteClient client, List<HoodieRecord> previousRecords, int sizeToDelete,
+      String existingFile, String commitTime, int exepctedRecords, List<String> keys) {
+    client.startCommitWithTime(commitTime);
+
+    List<HoodieKey> hoodieKeysToDelete = HoodieClientTestUtils
+        .getKeysToDelete(HoodieClientTestUtils.getHoodieKeys(previousRecords), sizeToDelete);
+    JavaRDD<HoodieKey> deleteKeys = jsc.parallelize(hoodieKeysToDelete, 1);
+    List<WriteStatus> statuses = client.delete(deleteKeys, commitTime).collect();
+
+    assertNoWriteErrors(statuses);
+
+    assertEquals("Just 1 file needs to be added.", 1, statuses.size());
+    assertEquals("Existing file should be expanded", existingFile, statuses.get(0).getFileId());
+
+    // Check the entire dataset has all records still
+    String[] fullPartitionPaths = new String[dataGen.getPartitionPaths().length];
+    for (int i = 0; i < fullPartitionPaths.length; i++) {
+      fullPartitionPaths[i] = String.format("%s/%s/*", basePath, dataGen.getPartitionPaths()[i]);
+    }
+    assertEquals("Must contain " + exepctedRecords + " records", exepctedRecords,
+        HoodieClientTestUtils.read(jsc, basePath, sqlContext, fs, fullPartitionPaths).count());
+
+    Path newFile = new Path(basePath, statuses.get(0).getStat().getPath());
+    assertEquals("file should contain 110 records", readRowKeysFromParquet(jsc.hadoopConfiguration(), newFile).size(),
+        exepctedRecords);
+
+    List<GenericRecord> records = ParquetUtils.readAvroRecords(jsc.hadoopConfiguration(), newFile);
+    for (GenericRecord record : records) {
+      String recordKey = record.get(HoodieRecord.RECORD_KEY_METADATA_FIELD).toString();
+      assertTrue("key expected to be part of " + commitTime, keys.contains(recordKey));
+      assertFalse("Key deleted", hoodieKeysToDelete.contains(recordKey));
+    }
+  }
+
+  /**
+   * Test delete with delete api.
+   */
+  @Test
+  public void testDeletesWithoutInserts() throws Exception {
+    final String testPartitionPath = "2016/09/26";
+    final int insertSplitLimit = 100;
+    // setup the small file handling params
+    HoodieWriteConfig config = getSmallInsertWriteConfig(insertSplitLimit, true); // hold upto 200 records max
+    dataGen = new HoodieTestDataGenerator(new String[]{testPartitionPath});
+
+    HoodieWriteClient client = getHoodieWriteClient(config, false);
+
+    // delete non existent keys
+    String commitTime1 = "001";
+    client.startCommitWithTime(commitTime1);
+
+    List<HoodieRecord> dummyInserts = dataGen.generateInserts(commitTime1, 20);
+    List<HoodieKey> hoodieKeysToDelete = HoodieClientTestUtils
+        .getKeysToDelete(HoodieClientTestUtils.getHoodieKeys(dummyInserts), 20);
+    JavaRDD<HoodieKey> deleteKeys = jsc.parallelize(hoodieKeysToDelete, 1);
+    try {
+      client.delete(deleteKeys, commitTime1).collect();
+      fail("Should have thrown Exception");
+    } catch (HoodieIOException e) {
+      // ignore
+    }
+  }
+
+  /**
+   * Test to ensure commit metadata points to valid files.
    */
   @Test
   public void testCommitWritesRelativePaths() throws Exception {
@@ -563,7 +735,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Test to ensure commit metadata points to valid files
+   * Test to ensure commit metadata points to valid files.
    */
   @Test
   public void testRollingStatsInMetadata() throws Exception {
@@ -638,7 +810,7 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Tests behavior of committing only when consistency is verified
+   * Tests behavior of committing only when consistency is verified.
    */
   @Test
   public void testConsistencyCheckDuringFinalize() throws Exception {
@@ -707,10 +879,17 @@ public class TestHoodieClientOnCopyOnWriteStorage extends TestHoodieClientBase {
   }
 
   /**
-   * Build Hoodie Write Config for small data file sizes
+   * Build Hoodie Write Config for small data file sizes.
    */
   private HoodieWriteConfig getSmallInsertWriteConfig(int insertSplitSize) {
-    HoodieWriteConfig.Builder builder = getConfigBuilder();
+    return getSmallInsertWriteConfig(insertSplitSize, false);
+  }
+
+  /**
+   * Build Hoodie Write Config for small data file sizes.
+   */
+  private HoodieWriteConfig getSmallInsertWriteConfig(int insertSplitSize, boolean useNullSchema) {
+    HoodieWriteConfig.Builder builder = getConfigBuilder(useNullSchema ? NULL_SCHEMA : TRIP_EXAMPLE_SCHEMA);
     return builder
         .withCompactionConfig(
             HoodieCompactionConfig.newBuilder().compactionSmallFileSize(HoodieTestDataGenerator.SIZE_PER_RECORD * 15)

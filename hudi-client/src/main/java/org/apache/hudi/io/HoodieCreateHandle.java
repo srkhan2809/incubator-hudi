@@ -18,11 +18,6 @@
 
 package org.apache.hudi.io;
 
-import java.io.IOException;
-import java.util.Iterator;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.IndexedRecord;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.model.HoodiePartitionMetadata;
 import org.apache.hudi.common.model.HoodieRecord;
@@ -37,9 +32,16 @@ import org.apache.hudi.exception.HoodieInsertException;
 import org.apache.hudi.io.storage.HoodieStorageWriter;
 import org.apache.hudi.io.storage.HoodieStorageWriterFactory;
 import org.apache.hudi.table.HoodieTable;
+
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.IndexedRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.TaskContext;
+
+import java.io.IOException;
+import java.util.Iterator;
 
 public class HoodieCreateHandle<T extends HoodieRecordPayload> extends HoodieWriteHandle<T> {
 
@@ -75,7 +77,7 @@ public class HoodieCreateHandle<T extends HoodieRecordPayload> extends HoodieWri
   }
 
   /**
-   * Called by the compactor code path
+   * Called by the compactor code path.
    */
   public HoodieCreateHandle(HoodieWriteConfig config, String commitTime, HoodieTable<T> hoodieTable,
       String partitionPath, String fileId, Iterator<HoodieRecord<T>> recordIterator) {
@@ -122,7 +124,7 @@ public class HoodieCreateHandle<T extends HoodieRecordPayload> extends HoodieWri
   }
 
   /**
-   * Writes all records passed
+   * Writes all records passed.
    */
   public void write() {
     try {
@@ -145,7 +147,7 @@ public class HoodieCreateHandle<T extends HoodieRecordPayload> extends HoodieWri
   }
 
   /**
-   * Performs actions to durably, persist the current changes and returns a WriteStatus object
+   * Performs actions to durably, persist the current changes and returns a WriteStatus object.
    */
   @Override
   public WriteStatus close() {

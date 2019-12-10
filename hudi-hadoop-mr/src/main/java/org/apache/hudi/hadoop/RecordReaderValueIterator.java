@@ -18,16 +18,18 @@
 
 package org.apache.hudi.hadoop;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hudi.exception.HoodieException;
+
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
- * Provides Iterator Interface to iterate value entries read from record reader
+ * Provides Iterator Interface to iterate value entries read from record reader.
  *
  * @param <K> Key Type
  * @param <V> Value Type
@@ -40,7 +42,7 @@ public class RecordReaderValueIterator<K, V> implements Iterator<V> {
   private V nextVal = null;
 
   /**
-   * Construct RecordReaderValueIterator
+   * Construct RecordReaderValueIterator.
    *
    * @param reader reader
    */

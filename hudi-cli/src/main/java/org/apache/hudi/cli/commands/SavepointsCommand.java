@@ -18,9 +18,6 @@
 
 package org.apache.hudi.cli.commands;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.hudi.HoodieWriteClient;
 import org.apache.hudi.cli.HoodieCLI;
 import org.apache.hudi.cli.HoodiePrintHelper;
@@ -32,6 +29,7 @@ import org.apache.hudi.common.table.timeline.HoodieInstant;
 import org.apache.hudi.config.HoodieIndexConfig;
 import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.index.HoodieIndex;
+
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.launcher.SparkLauncher;
 import org.springframework.shell.core.CommandMarker;
@@ -40,6 +38,13 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * CLI command to display savepoint options.
+ */
 @Component
 public class SavepointsCommand implements CommandMarker {
 
@@ -52,7 +57,6 @@ public class SavepointsCommand implements CommandMarker {
   public boolean isRefreshAvailable() {
     return HoodieCLI.tableMetadata != null;
   }
-
 
   @CliAvailabilityIndicator({"savepoint create"})
   public boolean isCreateSavepointAvailable() {
@@ -127,7 +131,6 @@ public class SavepointsCommand implements CommandMarker {
     return "Savepoint " + commitTime + " rolled back";
   }
 
-
   @CliCommand(value = "savepoints refresh", help = "Refresh the savepoints")
   public String refreshMetaClient() throws IOException {
     HoodieCLI.refreshTableMetadata();
@@ -139,6 +142,5 @@ public class SavepointsCommand implements CommandMarker {
         .withIndexConfig(HoodieIndexConfig.newBuilder().withIndexType(HoodieIndex.IndexType.BLOOM).build()).build();
     return new HoodieWriteClient(jsc, config, false);
   }
-
 
 }

@@ -18,13 +18,6 @@
 
 package org.apache.hudi.io;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.hudi.avro.model.HoodieCleanMetadata;
 import org.apache.hudi.common.model.CompactionOperation;
 import org.apache.hudi.common.model.FileSlice;
@@ -45,11 +38,20 @@ import org.apache.hudi.common.util.collection.Pair;
 import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.exception.HoodieIOException;
 import org.apache.hudi.table.HoodieTable;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
- * Cleaner is responsible for garbage collecting older files in a given partition path, such that
+ * Cleaner is responsible for garbage collecting older files in a given partition path. Such that
  * <p>
  * 1) It provides sufficient time for existing queries running on older versions, to close
  * <p>
@@ -81,7 +83,8 @@ public class HoodieCleanHelper<T extends HoodieRecordPayload<T>> implements Seri
   }
 
   /**
-   * Returns list of partitions where clean operations needs to be performed
+   * Returns list of partitions where clean operations needs to be performed.
+   *
    * @param newInstantToRetain New instant to be retained after this cleanup operation
    * @return list of partitions to scan for cleaning
    * @throws IOException when underlying file-system throws this exception
@@ -170,17 +173,17 @@ public class HoodieCleanHelper<T extends HoodieRecordPayload<T>> implements Seri
     return deletePaths;
   }
 
-
   /**
    * Selects the versions for file for cleaning, such that it
    * <p>
    * - Leaves the latest version of the file untouched - For older versions, - It leaves all the commits untouched which
-   * has occured in last <code>config.getCleanerCommitsRetained()</code> commits - It leaves ONE commit before this
+   * has occurred in last <code>config.getCleanerCommitsRetained()</code> commits - It leaves ONE commit before this
    * window. We assume that the max(query execution time) == commit_batch_time * config.getCleanerCommitsRetained().
-   * This is 12 hours by default. This is essential to leave the file used by the query thats running for the max time.
+   * This is 5 hours by default (assuming ingestion is running every 30 minutes). This is essential to leave the file
+   * used by the query that is running for the max time.
    * <p>
    * This provides the effect of having lookback into all changes that happened in the last X commits. (eg: if you
-   * retain 24 commits, and commit batch time is 30 mins, then you have 12 hrs of lookback)
+   * retain 10 commits, and commit batch time is 30 mins, then you have 5 hrs of lookback)
    * <p>
    * This policy is the default.
    */
@@ -292,7 +295,7 @@ public class HoodieCleanHelper<T extends HoodieRecordPayload<T>> implements Seri
   }
 
   /**
-   * Determine if file slice needed to be preserved for pending compaction
+   * Determine if file slice needed to be preserved for pending compaction.
    * 
    * @param fileSlice File Slice
    * @return true if file slice needs to be preserved, false otherwise.

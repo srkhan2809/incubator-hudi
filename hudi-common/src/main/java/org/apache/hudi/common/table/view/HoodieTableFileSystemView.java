@@ -18,15 +18,6 @@
 
 package org.apache.hudi.common.table.view;
 
-import com.google.common.base.Preconditions;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hudi.common.model.CompactionOperation;
 import org.apache.hudi.common.model.HoodieFileGroup;
 import org.apache.hudi.common.model.HoodieFileGroupId;
@@ -35,8 +26,19 @@ import org.apache.hudi.common.table.HoodieTimeline;
 import org.apache.hudi.common.table.TableFileSystemView;
 import org.apache.hudi.common.util.Option;
 import org.apache.hudi.common.util.collection.Pair;
+
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * TableFileSystemView Implementations based on in-memory storage.
@@ -52,12 +54,12 @@ public class HoodieTableFileSystemView extends IncrementalTimelineSyncFileSystem
   protected Map<String, List<HoodieFileGroup>> partitionToFileGroupsMap;
 
   /**
-   * PartitionPath + File-Id to pending compaction instant time
+   * PartitionPath + File-Id to pending compaction instant time.
    */
   protected Map<HoodieFileGroupId, Pair<String, CompactionOperation>> fgIdToPendingCompaction;
 
   /**
-   * Flag to determine if closed
+   * Flag to determine if closed.
    */
   private boolean closed = false;
 
@@ -66,14 +68,14 @@ public class HoodieTableFileSystemView extends IncrementalTimelineSyncFileSystem
   }
 
   /**
-   * Create a file system view, as of the given timeline
+   * Create a file system view, as of the given timeline.
    */
   public HoodieTableFileSystemView(HoodieTableMetaClient metaClient, HoodieTimeline visibleActiveTimeline) {
     this(metaClient, visibleActiveTimeline, false);
   }
 
   /**
-   * Create a file system view, as of the given timeline
+   * Create a file system view, as of the given timeline.
    */
   public HoodieTableFileSystemView(HoodieTableMetaClient metaClient, HoodieTimeline visibleActiveTimeline,
       boolean enableIncrementalTimelineSync) {

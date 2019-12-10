@@ -18,22 +18,24 @@
 
 package org.apache.hudi.hadoop.realtime;
 
-import java.io.IOException;
-import java.util.Map;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hudi.common.model.HoodieRecord;
 import org.apache.hudi.common.model.HoodieRecordPayload;
 import org.apache.hudi.common.table.log.HoodieMergedLogRecordScanner;
 import org.apache.hudi.common.util.FSUtils;
 import org.apache.hudi.common.util.HoodieAvroUtils;
 import org.apache.hudi.common.util.Option;
+
+import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.Map;
 
 class RealtimeCompactedRecordReader extends AbstractRealtimeRecordReader
     implements RecordReader<NullWritable, ArrayWritable> {
@@ -96,11 +98,13 @@ class RealtimeCompactedRecordReader extends AbstractRealtimeRecordReader
         }
         GenericRecord recordToReturn = rec.get();
         if (usesCustomPayload) {
-          // If using a custom payload, return only the projection fields
+          // If using a custom payload, return only the projection fields. The readerSchema is a schema derived from
+          // the writerSchema with only the projection fields
           recordToReturn = HoodieAvroUtils.rewriteRecordWithOnlyNewSchemaFields(rec.get(), getReaderSchema());
         }
         // we assume, a later safe record in the log, is newer than what we have in the map &
-        // replace it.
+        // replace it. Since we want to return an arrayWritable which is the same length as the elements in the latest
+        // schema, we use writerSchema to create the arrayWritable from the latest generic record
         ArrayWritable aWritable = (ArrayWritable) avroToArrayWritable(recordToReturn, getHiveSchema());
         Writable[] replaceValue = aWritable.get();
         if (LOG.isDebugEnabled()) {
@@ -115,7 +119,9 @@ class RealtimeCompactedRecordReader extends AbstractRealtimeRecordReader
           LOG.error("Got exception when doing array copy", re);
           LOG.error("Base record :" + arrayWritableToString(arrayWritable));
           LOG.error("Log record :" + arrayWritableToString(aWritable));
-          throw re;
+          String errMsg = "Base-record :" + arrayWritableToString(arrayWritable)
+              + " ,Log-record :" + arrayWritableToString(aWritable) + " ,Error :" + re.getMessage();
+          throw new RuntimeException(errMsg, re);
         }
       }
       return true;

@@ -18,14 +18,16 @@
 
 package org.apache.hudi.common.table.view;
 
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.hudi.common.SerializableConfiguration;
 import org.apache.hudi.common.table.HoodieTableMetaClient;
 import org.apache.hudi.common.table.HoodieTimeline;
 import org.apache.hudi.common.table.SyncableFileSystemView;
 import org.apache.hudi.common.util.Functions.Function2;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A container that can potentially hold one or more dataset's file-system views. There is one view for each dataset.
@@ -80,7 +82,7 @@ public class FileSystemViewManager {
   }
 
   /**
-   * Main API to get the file-system view for the base-path
+   * Main API to get the file-system view for the base-path.
    * 
    * @param basePath
    * @return
@@ -90,7 +92,7 @@ public class FileSystemViewManager {
   }
 
   /**
-   * Closes all views opened
+   * Closes all views opened.
    */
   public void close() {
     this.globalViewMap.values().stream().forEach(v -> v.close());
@@ -100,7 +102,7 @@ public class FileSystemViewManager {
   // FACTORY METHODS FOR CREATING FILE-SYSTEM VIEWS
 
   /**
-   * Create RocksDB based file System view for a dataset
+   * Create RocksDB based file System view for a dataset.
    * 
    * @param conf Hadoop Configuration
    * @param viewConf View Storage Configuration
@@ -115,7 +117,7 @@ public class FileSystemViewManager {
   }
 
   /**
-   * Create a spillable Map based file System view for a dataset
+   * Create a spillable Map based file System view for a dataset.
    * 
    * @param conf Hadoop Configuration
    * @param viewConf View Storage Configuration
@@ -130,9 +132,8 @@ public class FileSystemViewManager {
     return new SpillableMapBasedFileSystemView(metaClient, timeline, viewConf);
   }
 
-
   /**
-   * Create an in-memory file System view for a dataset
+   * Create an in-memory file System view for a dataset.
    * 
    * @param conf Hadoop Configuration
    * @param viewConf View Storage Configuration
@@ -148,7 +149,7 @@ public class FileSystemViewManager {
   }
 
   /**
-   * Create a remote file System view for a dataset
+   * Create a remote file System view for a dataset.
    * 
    * @param conf Hadoop Configuration
    * @param viewConf View Storage Configuration
@@ -164,7 +165,7 @@ public class FileSystemViewManager {
   }
 
   /**
-   * Main Factory method for building file-system views
+   * Main Factory method for building file-system views.
    * 
    * @param conf Hadoop Configuration
    * @param config View Storage Configuration

@@ -16,15 +16,6 @@
  * limitations under the License.
  */
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.DataSourceReadOptions;
 import org.apache.hudi.DataSourceWriteOptions;
 import org.apache.hudi.HoodieDataSourceHelpers;
@@ -32,6 +23,11 @@ import org.apache.hudi.common.HoodieTestDataGenerator;
 import org.apache.hudi.common.model.HoodieTableType;
 import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.hive.MultiPartKeysValueExtractor;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -43,8 +39,13 @@ import org.apache.spark.sql.streaming.DataStreamWriter;
 import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.ProcessingTime;
 
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 /**
- * Sample program that writes & reads hoodie datasets via the Spark datasource streaming
+ * Sample program that writes & reads hoodie datasets via the Spark datasource streaming.
  */
 public class HoodieJavaStreamingApp {
 
@@ -141,23 +142,19 @@ public class HoodieJavaStreamingApp {
     ExecutorService executor = Executors.newFixedThreadPool(2);
 
     // thread for spark strucutured streaming
-    Future<Void> streamFuture = executor.submit(new Callable<Void>() {
-      public Void call() throws Exception {
-        logger.info("===== Streaming Starting =====");
-        stream(streamingInput);
-        logger.info("===== Streaming Ends =====");
-        return null;
-      }
+    Future<Void> streamFuture = executor.submit(() -> {
+      logger.info("===== Streaming Starting =====");
+      stream(streamingInput);
+      logger.info("===== Streaming Ends =====");
+      return null;
     });
 
     // thread for adding data to the streaming source and showing results over time
-    Future<Void> showFuture = executor.submit(new Callable<Void>() {
-      public Void call() throws Exception {
-        logger.info("===== Showing Starting =====");
-        show(spark, fs, inputDF1, inputDF2);
-        logger.info("===== Showing Ends =====");
-        return null;
-      }
+    Future<Void> showFuture = executor.submit(() -> {
+      logger.info("===== Showing Starting =====");
+      show(spark, fs, inputDF1, inputDF2);
+      logger.info("===== Showing Ends =====");
+      return null;
     });
 
     // let the threads run
@@ -168,7 +165,7 @@ public class HoodieJavaStreamingApp {
   }
 
   /**
-   * Adding data to the streaming source and showing results over time
+   * Adding data to the streaming source and showing results over time.
    * 
    * @param spark
    * @param fs
@@ -187,7 +184,7 @@ public class HoodieJavaStreamingApp {
     // wait for spark streaming to process one microbatch
     Thread.sleep(3000);
     String commitInstantTime2 = HoodieDataSourceHelpers.latestCommit(fs, tablePath);
-    logger.info("Second commit at instant time :" + commitInstantTime1);
+    logger.info("Second commit at instant time :" + commitInstantTime2);
 
     /**
      * Read & do some queries
@@ -218,7 +215,7 @@ public class HoodieJavaStreamingApp {
   }
 
   /**
-   * Hoodie spark streaming job
+   * Hoodie spark streaming job.
    * 
    * @param streamingInput
    * @throws Exception
@@ -239,7 +236,7 @@ public class HoodieJavaStreamingApp {
   }
 
   /**
-   * Setup configs for syncing to hive
+   * Setup configs for syncing to hive.
    * 
    * @param writer
    * @return

@@ -18,6 +18,11 @@
 
 package org.apache.hudi.utilities.deltastreamer;
 
+import org.apache.hudi.common.util.collection.Pair;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,12 +30,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import org.apache.hudi.common.util.collection.Pair;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 /**
- * Base Class for running delta-sync/compaction in separate thread and controlling their life-cyle
+ * Base Class for running delta-sync/compaction in separate thread and controlling their life-cyle.
  */
 public abstract class AbstractDeltaStreamerService implements Serializable {
 
@@ -114,14 +116,14 @@ public abstract class AbstractDeltaStreamerService implements Serializable {
   }
 
   /**
-   * Service implementation
+   * Service implementation.
    * 
    * @return
    */
   protected abstract Pair<CompletableFuture, ExecutorService> startService();
 
   /**
-   * A monitor thread is started which would trigger a callback if the service is shutdown
+   * A monitor thread is started which would trigger a callback if the service is shutdown.
    * 
    * @param onShutdownCallback
    */

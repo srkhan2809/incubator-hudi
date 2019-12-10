@@ -18,8 +18,9 @@
 
 package org.apache.hudi.metrics;
 
-import com.codahale.metrics.MetricRegistry;
 import org.apache.hudi.config.HoodieWriteConfig;
+
+import com.codahale.metrics.MetricRegistry;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -39,6 +40,9 @@ public class MetricsReporterFactory {
         break;
       case INMEMORY:
         reporter = new InMemoryMetricsReporter();
+        break;
+      case JMX:
+        reporter = new JmxMetricsReporter(config);
         break;
       default:
         logger.error("Reporter type[" + type + "] is not supported.");

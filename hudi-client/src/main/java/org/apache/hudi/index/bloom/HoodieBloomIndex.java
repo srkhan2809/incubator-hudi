@@ -18,16 +18,6 @@
 
 package org.apache.hudi.index.bloom;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-
-import com.google.common.annotations.VisibleForTesting;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.model.HoodieKey;
 import org.apache.hudi.common.model.HoodieRecord;
@@ -42,6 +32,8 @@ import org.apache.hudi.exception.MetadataNotFoundException;
 import org.apache.hudi.index.HoodieIndex;
 import org.apache.hudi.io.HoodieRangeInfoHandle;
 import org.apache.hudi.table.HoodieTable;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.Partitioner;
@@ -49,7 +41,18 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import scala.Tuple2;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Indexing mechanism based on bloom filter. Each parquet file includes its row_key bloom filter in its metadata.
@@ -138,7 +141,7 @@ public class HoodieBloomIndex<T extends HoodieRecordPayload> extends HoodieIndex
 
   /**
    * Lookup the location for each record key and return the pair<record_key,location> for all record keys already
-   * present and drop the record keys if not present
+   * present and drop the record keys if not present.
    */
   private JavaPairRDD<HoodieKey, HoodieRecordLocation> lookupIndex(
       JavaPairRDD<String, String> partitionRecordKeyPairRDD, final JavaSparkContext jsc,
@@ -164,7 +167,7 @@ public class HoodieBloomIndex<T extends HoodieRecordPayload> extends HoodieIndex
   }
 
   /**
-   * Compute the estimated number of bloom filter comparisons to be performed on each file group
+   * Compute the estimated number of bloom filter comparisons to be performed on each file group.
    */
   private Map<String, Long> computeComparisonsPerFileGroup(final Map<String, Long> recordsPerPartition,
       final Map<String, List<BloomIndexFileInfo>> partitionToFileInfo,
@@ -268,7 +271,6 @@ public class HoodieBloomIndex<T extends HoodieRecordPayload> extends HoodieIndex
     }
   }
 
-
   @Override
   public boolean rollbackCommit(String commitTime) {
     // Nope, don't need to do anything.
@@ -276,7 +278,7 @@ public class HoodieBloomIndex<T extends HoodieRecordPayload> extends HoodieIndex
   }
 
   /**
-   * This is not global, since we depend on the partitionPath to do the lookup
+   * This is not global, since we depend on the partitionPath to do the lookup.
    */
   @Override
   public boolean isGlobal() {

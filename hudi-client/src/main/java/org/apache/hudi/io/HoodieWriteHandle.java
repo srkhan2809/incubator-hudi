@@ -18,12 +18,6 @@
 
 package org.apache.hudi.io;
 
-import java.io.IOException;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.IndexedRecord;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hudi.WriteStatus;
 import org.apache.hudi.common.model.HoodieRecord;
 import org.apache.hudi.common.model.HoodieRecordPayload;
@@ -36,9 +30,17 @@ import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.exception.HoodieException;
 import org.apache.hudi.exception.HoodieIOException;
 import org.apache.hudi.table.HoodieTable;
+
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.IndexedRecord;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.TaskContext;
+
+import java.io.IOException;
 
 /**
  * Base class for all write operations logically performed at the file group level.
@@ -88,7 +90,7 @@ public abstract class HoodieWriteHandle<T extends HoodieRecordPayload> extends H
   }
 
   /**
-   * Creates an empty marker file corresponding to storage writer path
+   * Creates an empty marker file corresponding to storage writer path.
    *
    * @param partitionPath Partition path
    */
@@ -103,7 +105,7 @@ public abstract class HoodieWriteHandle<T extends HoodieRecordPayload> extends H
   }
 
   /**
-   * THe marker path will be <base-path>/.hoodie/.temp/<instant_ts>/2019/04/25/filename
+   * THe marker path will be <base-path>/.hoodie/.temp/<instant_ts>/2019/04/25/filename.
    */
   private Path makeNewMarkerPath(String partitionPath) {
     Path markerRootPath = new Path(hoodieTable.getMetaClient().getMarkerFolderPath(instantTime));
@@ -121,7 +123,7 @@ public abstract class HoodieWriteHandle<T extends HoodieRecordPayload> extends H
   }
 
   /**
-   * Determines whether we can accept the incoming records, into the current file, depending on
+   * Determines whether we can accept the incoming records, into the current file. Depending on
    * <p>
    * - Whether it belongs to the same partitionPath as existing records - Whether the current file written bytes lt max
    * file size
@@ -152,7 +154,7 @@ public abstract class HoodieWriteHandle<T extends HoodieRecordPayload> extends H
   }
 
   /**
-   * Rewrite the GenericRecord with the Schema containing the Hoodie Metadata fields
+   * Rewrite the GenericRecord with the Schema containing the Hoodie Metadata fields.
    */
   protected GenericRecord rewriteRecord(GenericRecord record) {
     return HoodieAvroUtils.rewriteRecord(record, writerSchema);

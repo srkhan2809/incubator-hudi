@@ -16,33 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hudi;
-
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.IndexedRecord;
-import org.apache.hudi.common.model.HoodieRecordPayload;
-import org.apache.hudi.common.util.Option;
+package org.apache.hudi.exception;
 
 /**
- * Empty payload used for deletions
+ * <p>
+ * Exception thrown for Hoodie Key Generator related errors.
+ * </p>
  */
-public class EmptyHoodieRecordPayload implements HoodieRecordPayload<EmptyHoodieRecordPayload> {
+public class HoodieKeyException extends HoodieException {
 
-  public EmptyHoodieRecordPayload(GenericRecord record, Comparable orderingVal) {}
-
-  @Override
-  public EmptyHoodieRecordPayload preCombine(EmptyHoodieRecordPayload another) {
-    return another;
+  public HoodieKeyException(String msg) {
+    super(msg);
   }
 
-  @Override
-  public Option<IndexedRecord> combineAndGetUpdateValue(IndexedRecord currentValue, Schema schema) {
-    return Option.empty();
-  }
-
-  @Override
-  public Option<IndexedRecord> getInsertValue(Schema schema) {
-    return Option.empty();
+  public HoodieKeyException(String msg, Throwable e) {
+    super(msg, e);
   }
 }
